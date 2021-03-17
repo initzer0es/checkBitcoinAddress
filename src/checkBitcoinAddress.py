@@ -1,8 +1,6 @@
 from .utilities import Utilities
+from blockcypher import get_address_details
 import requests
-
-
-RELEASE = 'Check Bitcoin Address v1.0 ~ @initzer0es'
 
 
 class CheckBitcoinAddress:
@@ -28,8 +26,7 @@ class CheckBitcoinAddress:
         try:
             return self._SESSION.get(params['url'], headers=headers, params=params['params']).text
         except:
-            pass
-        return '?'
+            return '?'
 
     def check_address(self):
         U = Utilities()
@@ -48,15 +45,6 @@ class CheckBitcoinAddress:
                     ),
                 },
                 {
-                    'url': f'https://www.blockchain.com/btc/address/{current_address}',
-                    'headers': {
-                        'authority': 'www.blockchain.com',
-                        'cache-control': 'max-age=0',
-                        'sec-fetch-site': 'same-origin',
-                    },
-                    'params': None,
-                },
-                {
                     'url': 'https://api.coindesk.com/v1/bpi/currentprice/USD.json',
                     'headers': {
                         'authority': 'api.coindesk.com',
@@ -66,7 +54,7 @@ class CheckBitcoinAddress:
                     'params': None,
                 }
             ]
-            response = ''
+            response = str(get_address_details(current_address))
             for current_param in list_of_params:
                 response += self.get(current_param)
             info = U.get_info(response)
