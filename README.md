@@ -18,7 +18,7 @@ git clone https://github.com/initzer0es/checkBitcoinAddress.git
 
 ## Dependencies:
 
-checkBitcoinAddress uses the `colorama` and `requests` python modules.
+checkBitcoinAddress uses the [`blockcypher`](https://github.com/blockcypher/blockcypher-python), [`colorama`](https://github.com/tartley/colorama) and [`requests`](https://github.com/psf/requests) python modules.
 
 The module can be installed using the requirements file:
 
@@ -50,4 +50,4 @@ python main.py
 
 ## Version
 
-**Current version is 1.0**
+**Current version is 1.1**
