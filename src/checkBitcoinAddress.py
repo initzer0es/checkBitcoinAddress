@@ -1,5 +1,4 @@
 from .utilities import Utilities
-from blockcypher import get_address_details
 import requests
 
 
@@ -45,6 +44,15 @@ class CheckBitcoinAddress:
                     ),
                 },
                 {
+                    'url': f'https://www.blockchain.com/btc/address/{current_address}',
+                    'headers': {
+                        'authority': 'www.blockchain.com',
+                        'cache-control': 'max-age=0',
+                        'sec-fetch-site': 'same-origin',
+                    },
+                    'params': None,
+                },
+                {
                     'url': 'https://api.coindesk.com/v1/bpi/currentprice/USD.json',
                     'headers': {
                         'authority': 'api.coindesk.com',
@@ -54,9 +62,11 @@ class CheckBitcoinAddress:
                     'params': None,
                 }
             ]
-            response = str(get_address_details(current_address))
+            response = ''
             for current_param in list_of_params:
                 response += self.get(current_param)
+            current_json_data = U.get_json_data(current_address, response)
+            U.write_log(current_address, current_json_data)
             info = U.get_info(response)
             U.print_info(info, count)
             count += 1

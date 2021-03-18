@@ -1,8 +1,6 @@
 from .color import Color as c
 from .config import REFRESH_SECOND
-from blockcypher import satoshis_to_btc
-from datetime import date
-from datetime import datetime
+import json
 import locale
 import os
 import re
@@ -13,16 +11,20 @@ import time
 
 class Utilities:
     def __init__(self):
-        self._release = 'Check Bitcoin Address v1.1 ~ @initzer0es'
+        self._release = 'Check Bitcoin Address v1.2 ~ @initzer0es'
         self._REGEX_PATTERN = [
             'USD","rate":"(.*?)"',
             '{"address":"(.*?)"',
             ',"count":(.*?),',
             ',"last_seen":"(.*?)"',
-            "'n_tx': ([0-9]+),",
-            "'total_received': ([0-9]+),",
-            "'value': ([0-9]+),",
-            "datetime\(([0-9]+,\s[0-9]+,\s[0-9]+),",
+            'Transactions<\/span><\/div><\/.*?opacity="1">([0-9]+)<\/span>',
+            'Total Received<\/span><\/div><\/.*?opacity="1">(.*?)<\/span>',
+            'opacity="1">([0-9].[0-9]+\sBTC)<\/span><a',
+            'opacity="1">([0-9]+-[0-9]+-[0-9]+)',
+            '"abuse_type_id":([0-9]+),',
+            '"abuse_type_other":(.*?),',
+            '"description":"(.*?)","created_at',
+            '"created_at":"(.*?)"',
         ]
 
     def color(self, string, fore, back=None):
@@ -51,9 +53,9 @@ class Utilities:
     def set_locale(self):
         locale.setlocale(locale.LC_ALL, '')
 
-    def regex(self, pattern, string):
+    def regex(self, pattern, string, as_list=False):
         try:
-            return re.search(pattern, string).group(1)
+            return re.findall(pattern, string) if (as_list) else re.search(pattern, string).group(1)
         except:
             return '?'
 
@@ -69,20 +71,9 @@ class Utilities:
         print('%s\n\n' % sleep_message)
         time.sleep(REFRESH_SECOND)
 
-    def convert_time_format(self, string):
-        if (string != '?'):
-            current_format = datetime.strptime(string, '%Y, %m, %d')
-            return date.strftime(current_format, "%Y-%m-%d")
-        return string
-
-    def convert_satoshi_to_btc(self, string):
-        try:
-            return satoshis_to_btc(int(string))
-        except:
-            return '?'
-
     def convert_btc_to_usd(self, btc, usd):
         try:
+            btc = float(btc.split(' ')[0])
             usd = int(usd.replace(',', ''))
             return f'{round(btc * usd):,}'
         except:
@@ -94,15 +85,57 @@ class Utilities:
     def get_converted(self, params):
         return ' => %s USD' % self.convert_btc_to_usd(params['usd'], params['btc']) if (params['iszero'] != '0') else ' => ? USD'
 
+    def get_abuse_type(self, type):
+        ret = {
+            '1': 'Ransomware',
+            '2': 'Darknet Market',
+            '3': 'Bitcoin Tumbler',
+            '4': 'Blackmail Scam',
+            '5': 'Sextortion',
+        }
+        return ret.get(type, 'Other')
+
+    def clean_created_at(self, string):
+        date = string.split('T')[0]
+        time = string.split('T')[1].split('.')[0]
+        return f'{date} {time}'
+
+    def get_json_data(self, current_address, string):
+        data = {}
+        data[current_address] = []
+        abuse_type_id = self.regex(self._REGEX_PATTERN[8], string, True)
+        abuse_type_other = self.regex(self._REGEX_PATTERN[9], string, True)
+        description = self.regex(self._REGEX_PATTERN[10], string, True)
+        created_at = self.regex(self._REGEX_PATTERN[11], string, True)
+        for i in range(len(abuse_type_id)):
+            current_created_at = self.clean_created_at(created_at[i])
+            current_abuse_type = self.get_abuse_type(abuse_type_id[i])
+            current_abuse_type_other = abuse_type_other[i]
+            current_description = description[i]
+            data[current_address].append({
+                'created_at': current_created_at,
+                'abuse_type': current_abuse_type,
+                'abuse_type_other': current_abuse_type_other,
+                'description': current_description
+            })
+        return data
+
+    def write_log(self, current_address, json_data):
+        from .color import LOG_DIRECTORY
+        if (not os.path.exists(LOG_DIRECTORY)):
+            os.makedirs(LOG_DIRECTORY)
+        with open(f'{LOG_DIRECTORY}{current_address}.txt', 'w') as file:
+            json.dump(json_data, file, indent=4)
+
     def print_info(self, info, count):
         info_btc = info[0].split('.')[0]
         info_address = info[1]
         info_report = info[2]
         info_last_report = info[3]
         info_transactions = info[4]
-        info_total = self.convert_satoshi_to_btc(info[5])
-        info_last_transactions = self.convert_satoshi_to_btc(info[6])
-        info_date_last_transactions = self.convert_time_format(info[7])
+        info_total = info[5]
+        info_last_transactions = info[6]
+        info_date_last_transactions = info[7]
         info_last_1 = info_last_2 = ''
         has_info_last = False
         convert_total = self.get_converted({
@@ -117,7 +150,7 @@ class Utilities:
                 'iszero': info_transactions,
             })
             info_last_1 = '        Last Transactions: '
-            info_last_2 = f' {info_last_transactions} BTC{convert_last} [{info_date_last_transactions}] '
+            info_last_2 = f' {info_last_transactions}{convert_last} [{info_date_last_transactions}] '
             has_info_last = True
         strings_info = {
             'si1': self.color(f'[{self.current_time()}]{c.sReset}', c.lBlack),
@@ -135,7 +168,7 @@ class Utilities:
             'si13': self.color(f'    Transactions (in-out): ', c.yellow),
             'si14': self.color(f' {info_transactions} ', c.black, c.bYellow),
             'si15': self.color(f'           Total Received: ', c.green),
-            'si16': self.color(f' {info_total} BTC{convert_total} ', c.black, c.bGreen),
+            'si16': self.color(f' {info_total}{convert_total} ', c.black, c.bGreen),
             'si17': self.color(info_last_1, c.lCyan),
             'si18': self.color(info_last_2, c.black, c.bLCyan),
             'si19': self.color('}', c.lWhite),

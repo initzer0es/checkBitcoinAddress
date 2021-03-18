@@ -1,3 +1,2 @@
-blockcypher
 colorama
 requests

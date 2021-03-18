@@ -3,6 +3,7 @@ import platform
 
 
 DIRECTORY_SEPARATOR = '/' if 'linux' == platform.system().lower() else '\\'
+LOG_DIRECTORY = f'.{DIRECTORY_SEPARATOR}log{DIRECTORY_SEPARATOR}'
 
 
 def colorama_init():
