@@ -9,6 +9,7 @@ def main():
     })
     CBA.start_signal()
     CBA.colorama_init()
+    CBA.ascii_art()
     CBA.check_directory_log()
     while (True):
         CBA.check_address()
