@@ -34,7 +34,7 @@ pip install -r requirements.txt
 sudo pip3 install -r requirements.txt
 ```
 
-## Configurations @`src\config.py`:
+## Configurations @`src\config\config.py`:
 
 `LIST_ADDRESS` comma separated bitcoin address.
 
