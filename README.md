@@ -53,7 +53,7 @@ python main.py
 - Linux
 
 ```
-python3 main.py
+sudo python3 main.py
 ```
 
 ## Version
