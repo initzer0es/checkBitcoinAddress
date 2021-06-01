@@ -1,22 +1,18 @@
-from src.checkBitcoinAddress import CheckBitcoinAddress
-from src.color import colorama_init
-from src.config import MY_ADDRESS, BITCOIN_ABUSE_API_TOKEN
-from src.utilities import Utilities
-
-
-colorama_init()
-U = Utilities()
+from src.tools.checkBitcoinAddress import CheckBitcoinAddress
+from src.config.config import LIST_ADDRESS, BITCOIN_ABUSE_API_TOKEN
 
 
 def main():
-    U.start_signal()
-    U.set_locale()
-    CBA = CheckBitcoinAddress(MY_ADDRESS, BITCOIN_ABUSE_API_TOKEN)
-    while True:
+    CBA = CheckBitcoinAddress({
+        'p1': LIST_ADDRESS,
+        'p2': BITCOIN_ABUSE_API_TOKEN
+    })
+    CBA.start_signal()
+    CBA.colorama_init()
+    CBA.check_directory_log()
+    while (True):
         CBA.check_address()
-        U.sleep()
 
 
 if __name__ == '__main__':
-    U.ascii_art()
     main()

@@ -14,7 +14,7 @@ git clone https://github.com/initzer0es/checkBitcoinAddress.git
 
 ## Recommended Python Version:
 
-- The recommended version of Python is **3.9.x**
+- The recommended version of Python is **3.9.x**, or higher
 
 ## Dependencies:
 
@@ -31,23 +31,31 @@ pip install -r requirements.txt
 - Linux
 
 ```
-sudo pip install -r requirements.txt
+sudo pip3 install -r requirements.txt
 ```
 
 ## Configurations @`src\config.py`:
 
-`MY_ADDRESS` comma separated bitcoin address.
+`LIST_ADDRESS` comma separated bitcoin address.
 
-`REFRESH_SECOND` sleep time in second before refreshing.
+`REFRESH_SECONDS` sleep time in seconds before updating information.
 
 `BITCOIN_ABUSE_API_TOKEN` get api token from [bitcoinabuse](https://www.bitcoinabuse.com).
 
 ## Usage
 
+- Windows:
+
 ```
 python main.py
 ```
 
+- Linux
+
+```
+python3 main.py
+```
+
 ## Version
 
-**Current version is 1.2**
+**Current version is 1.3**
